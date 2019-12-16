@@ -1,0 +1,70 @@
+import numpy as np
+import cv2
+import sys
+from collections import namedtuple
+
+#brightrange brightness range
+#val brightness value
+Level = namedtuple("Level", ['brightrange', 'val'])
+
+#different range levels for ranking from 0-10
+_levels = [
+    Level(brightrange=range(0, 24), val=0),
+    Level(brightrange=range(23, 47), val=1),
+    Level(brightrange=range(46, 70), val=2),
+    Level(brightrange=range(69, 93), val=3),
+    Level(brightrange=range(92, 116), val=4),
+    Level(brightrange=range(115, 140), val=5),
+    Level(brightrange=range(139, 163), val=6),
+    Level(brightrange=range(162, 186), val=7),
+    Level(brightrange=range(185, 209), val=8),
+    Level(brightrange=range(208, 232), val=9),
+    Level(brightrange=range(231, 256), val=10),
+]
+
+
+#we are deciding to calculate for either GrayScale image for HSV image
+def inputdecider(x):
+	inputvalue = int(x)
+	if inputvalue == 1:
+		print("for HSV Image Analysis")
+		print("the image brightness level is: {0}".format(detect_level(GetImgAvgBrightness())))
+	elif inputvalue == 2:
+		print("for GraySacle Image Analysis")
+		print("the image brightness leve is: {0}".format(detect_level(GetImgAvgBrightnessGRAYIMAGE())))
+	else: 
+		print("Your input is invalid")
+
+
+#this compares the average value for either grayscale or HSV image in the range
+def detect_level(intavgval):
+    intavgval = int(intavgval)
+    for level in _levels:
+        if intavgval in level.brightrange:
+            return level.val
+    raise ValueError("Brightness Level Out of Range")
+
+
+
+def GetImgAvgBrightnessGRAYIMAGE():
+
+    img = cv2.imread(sys.argv[1])
+    hsv = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+    avg_color_per_row = np.average(hsv,axis=0)
+    avg_color = np.average(avg_color_per_row, axis=0)
+    return int(avg_color)
+
+
+
+def GetImgAvgBrightness():
+
+    img = cv2.imread(sys.argv[1])
+    hsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+    _, _, v = cv2.split(hsv)
+    return int(np.average(v.flatten()))
+
+if __name__ == '__main__':
+    print("Press 2 for GrayImage Analysis or 1 for HSV Image Analysis")
+    inputval = input()
+    inputdecider(inputval)
+    
